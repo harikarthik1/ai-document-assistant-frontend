@@ -26,6 +26,7 @@ export function DocumentDetailPage() {
   const [askLoading, setAskLoading] = useState(false);
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteDocumentLoading, setDeleteDocumentLoading] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -139,6 +140,23 @@ export function DocumentDetailPage() {
     }
   };
 
+  const handleDeleteDocument = async () => {
+    if (!id || !document) return;
+    if (!window.confirm('Delete this document and all related chat history? This action cannot be undone.')) {
+      return;
+    }
+    setDeleteDocumentLoading(true);
+    try {
+      await documentsService.deleteDocument(Number(id));
+      showToast('Document deleted successfully', 'success');
+      navigate('/documents');
+    } catch {
+      showToast('Failed to delete document', 'error');
+    } finally {
+      setDeleteDocumentLoading(false);
+    }
+  };
+
   const formatTime = (dateStr: string) => {
     try {
       return new Date(dateStr).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
@@ -201,6 +219,15 @@ export function DocumentDetailPage() {
             >
               <Sparkles className="h-3.5 w-3.5" />
               Generate Summary
+            </Button>
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={handleDeleteDocument}
+              loading={deleteDocumentLoading}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Delete Document
             </Button>
             <Button
               variant={confirmDelete ? 'danger' : 'ghost'}

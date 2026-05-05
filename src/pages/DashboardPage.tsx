@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, FileText, Calendar, ArrowRight } from 'lucide-react';
+import { Plus, FileText, Calendar, ArrowRight, Trash2 } from 'lucide-react';
 import { documentsService } from '../services/documents';
 import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -37,6 +37,20 @@ export function DashboardPage() {
 
   const handleUploaded = (doc: Document) => {
     setDocuments((prev) => [doc, ...prev]);
+  };
+
+  const handleDeleteDocument = async (id: number) => {
+    if (!window.confirm('Delete this document? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      await documentsService.deleteDocument(id);
+      setDocuments((prev) => prev.filter((doc) => doc.id !== id));
+      showToast('Document deleted successfully', 'success');
+    } catch {
+      showToast('Failed to delete document', 'error');
+    }
   };
 
   const formatDate = (dateStr: string) => {
@@ -116,7 +130,7 @@ export function DashboardPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {documents.map((doc) => {
-              const fileType = getFileIcon(doc.filename || doc.name || '');
+              const fileType = getFileIcon(doc.fileName || doc.name || '');
               return (
                 <Card key={doc.id} hoverable onClick={() => navigate(`/documents/${doc.id}`)}>
                   <CardBody className="space-y-3">
@@ -124,6 +138,17 @@ export function DashboardPage() {
                       <div className={`h-10 w-10 rounded-lg flex items-center justify-center text-xs font-bold ${iconColors[fileType]}`}>
                         {fileType}
                       </div>
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleDeleteDocument(doc.id);
+                        }}
+                        className="rounded-full p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30"
+                        aria-label={`Delete ${doc.fileName}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 line-clamp-2 leading-snug">

@@ -19,6 +19,10 @@ export const documentsService = {
     return res.data;
   },
 
+  deleteDocument: async (id: number) => {
+    await API.delete(`/documents/${id}`);
+  },
+
   askQuestion: async (id: number, question: string) => {
     const res = await API.post(`/documents/${id}/ask`, { question });
     return res.data;
